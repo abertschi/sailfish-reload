@@ -1,7 +1,12 @@
+![license: MIT]( https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)
+[![twitter: @andrinbertschi]( https://img.shields.io/badge/twitter-andrinbertschi-yellow.svg?style=flat-square)](twitter.com/andrinbertschi)  
+
 # sailfish-reload
    > Auto update source changes and sync them to the Sailfish Emulator or the Jolla Phone.
 
 This module aims to speed up QML prototyping for SailfishOS by autosyncing any changes to a target. It is analogous to an autorefresh feature in web development.
+
+![sailfish-reload-demo](http://abertschi.ch/default_public/sailfish-reload-demo.700.gif)
 
 ### Requirements
 0. sailfish-sdk - https://sailfishos.org/develop/
