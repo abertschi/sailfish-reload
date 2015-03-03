@@ -1,4 +1,4 @@
- # sailfish-reload
+# sailfish-reload
    > Auto update source changes and sync them to the Sailfish Emulator or the Jolla Phone.
 
 This module aims to speed up QML prototyping for SailfishOS by autosyncing any changes to a target. It is analogous to an autorefresh feature in web development.

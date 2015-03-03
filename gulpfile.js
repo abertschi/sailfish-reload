@@ -50,8 +50,7 @@ gulp.task('sshfs-umount', function() {
 		return gulp.src('').pipe(shell('umount ' + config.mount,
 		 { ignoreErrors: true }));
 });
-
-
+  	
 function formatError(e) {
 	if (!e.err) {
 		return e.message;
