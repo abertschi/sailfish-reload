@@ -12,6 +12,7 @@ var fs = require('fs');
 var findup = require('findup');
 var chalk = require('chalk');
 var spawn = require('child_process').spawn;
+var path = require('path');
 
 
 var SfReload = new Liftoff({
@@ -25,11 +26,7 @@ var SfReload = new Liftoff({
 	console.log('Loading:', name);
 }).on('requireFail', function(name, err) {
 	console.log('Unable to load:', name, err);
-}).on('respawn', function(flags, child) {
-	console.log('Detected node flags:', flags);
-	console.log('Respawned to PID:', child.pid);
 });
-
 
 SfReload.launch({
 	cwd: argv.cwd,
@@ -69,7 +66,7 @@ function invoke(env) {
 
 	if (!env.modulePath) {
 		console.log('sailfish-reload not found in:', env.cwd);
-		//process.exit(1);
+		process.exit(1);
 	}
 
   var reloadfileLoc = env.cwd + '/reloadfile.json';
@@ -81,21 +78,28 @@ function invoke(env) {
     process.exit(1);
   }
 
-  var configFile = require(reloadfileLoc);
+	var configFile;
+	try {
+   	configFile = require(reloadfileLoc);
+	} catch(e) {}
 	if (!configFile) {
 		console.log('No sailfish-reloadfile found.');
     process.exit(1);
 	}
 
-/*
-  var sfReload = require('../index.js');
-	sfReload.startReload(configFile); */
+  // there seem to be 2 ways to trigger gulp
+	// 1) gulp.start() but withou propper login
+	// 2) spawn gulp like on cli
 
-  var exec = spawn('node',
-		['../node_modules/gulp/bin/gulp.js',
+	var gulpLoc = path.resolve(__dirname, '../node_modules/gulp/bin/gulp.js');
+	var gulpfile = path.resolve(__dirname, '../gulpfile.js');
+	console.log(gulpLoc);
+	var exec = spawn('node',
+		[gulpLoc,
 		'--cwd', env.cwd,
-		'--gulpfile', '../gulpfile.js',
-		'--reloadfile', reloadfileLoc]);
+		'--gulpfile', gulpfile,
+		'--reloadfile', reloadfileLoc,
+		'cli-default']);
 
   exec.stdout.on('data', function (data) {
 		process.stdout.write('' + data);
