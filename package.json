@@ -1,7 +1,7 @@
 {
   "name": "sailfish-reload",
   "version": "0.0.1",
-  "description": "Auto synces source changes to Jolla or Emulator",
+  "description": "Auto update source changes and sync them to the Sailfish Emulator or the Jolla Phone.",
   "main": "gulpfile.js",
   "author": "Andrin Bertschi",
   "license": "MIT",
