@@ -6,6 +6,7 @@ var gulp = require('gulp'),
 	shell = require('gulp-shell'),
 	GulpSsh = require('gulp-ssh'),
 	fs = require('fs'),
+	notify = require("gulp-notify"),
 	argv = require('minimist')(process.argv.slice(2));
 
 var ssh;
@@ -46,10 +47,30 @@ gulp.task('restart-app', ['sync-files'], function() {
 gulp.task('sshfs-umount', function() {
 	util.log('unmounting', config.mount);
 
-	try {
-		return gulp.srch('').pipe(shell('umount ' + config.mount));
-	} catch (e) {}
+		return gulp.src('').pipe(shell('umount ' + config.mount,
+		 { ignoreErrors: true }));
 });
+
+
+function formatError(e) {
+	if (!e.err) {
+		return e.message;
+	}
+
+	// PluginError
+	if (typeof e.err.showStack === 'boolean') {
+		return e.err.toString();
+	}
+
+	// normal error
+	if (e.err.stack) {
+		return e.err.stack;
+	}
+
+	// unknown (string, number, etc.)
+	return new Error(String(e.err)).stack;
+}
+
 
 gulp.task('sshfs-mount', ['sshfs-umount'], function() {
 	util.log('mounting device to', config.mount);
@@ -71,6 +92,10 @@ gulp.task('sshfs-mount', ['sshfs-umount'], function() {
 				}
 			})
 	);
+});
+
+gulp.on('err', function () {
+	util.beep();
 });
 
 gulp.task('parse-args', function() {
