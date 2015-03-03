@@ -1,5 +1,5 @@
 // =================================================================
-// qml-reload for sailfishOS
+// sailfsh-reload
 //   > Auto synces source changes to Jolla or Emulator
 //   > and restarts app if desired.
 //
@@ -21,70 +21,44 @@
 // =================================================================/
 
 var gulp = require('gulp'),
-	prompt = require('gulp-prompt'),
-	util = require('gulp-util'),
-	shell = require('gulp-shell'),
-	GulpSsh = require('gulp-ssh'),
-	fs = require('fs');
+  prompt = require('gulp-prompt'),
+  util = require('gulp-util'),
+  shell = require('gulp-shell'),
+  GulpSsh = require('gulp-ssh'),
+  fs = require('fs'),
+  argv = require('minimist')(process.argv.slice(2));
 
 var ssh;
-var configLoc = './reload.config';
 var config;
 
-function createDefaultConfig() {
-  return {
-  	sshfs: {
-  		host: 'localhost',
-  		user: 'root',
-  		port: '2223',
-  		keyfile: '/Applications/sailfish-sdk/vmshare/ssh/private_keys/SailfishOS_Emulator/root'
-  	},
-  	sync: {
-      // files to by synced to dest
-  		src: [
-  			'/Users/abertschi/beandata/pgm/proj/sailfish-wlan-keyboard/harbour-wlan-keyboard/qml/**/*.*'
-  		],
-      // location on jolla/ emulaltor
-  		dest: '/usr/share/harbour-wlan-keyboard/qml'
-  	},
-    // dest mount location on your host machine:
-  	mount: '/mnt/jolla',
-  	sailfish: {
-      autoLaunch: true,
-      app: 'harbour-wlan-keyboard',
-      ssh: {
-        host: 'localhost',
-        user: 'nemo',
-        port: '2223',
-        keyfile: '/Applications/sailfish-sdk/vmshare/ssh/private_keys/SailfishOS_Emulator/nemo'
-      }
-  	}
-  };
-}
+function startReload(c) {
+	config = c;
+  gulp.start('default');
+};
+
+exports.startReload = startReload;
 
 gulp.task('initSsh', function() {
   var sf = config.sailfish;
   if (sf.autoLaunch) {
     ssh = new GulpSsh({
-  		ignoreErrors: false,
-  		sshConfig: {
-  			host: sf.ssh.host,
-  			port: sf.ssh.port,
-  			username: sf.ssh.user,
-  			privateKey: require('fs').readFileSync(sf.ssh.keyfile)
-  		}
-	  });
+      ignoreErrors: false,
+      sshConfig: {
+        host: sf.ssh.host,
+        port: sf.ssh.port,
+        username: sf.ssh.user,
+        privateKey: require('fs').readFileSync(sf.ssh.keyfile)
+      }
+    });
   }
 });
 
 gulp.task('sync', function() {
-	return gulp.src(config.sync.src)
-		.pipe(gulp.dest(config.mount + config.sync.dest));
+  var dest = config.mount + config.sync.dest;
+  util.log('syncing files to ' + dest);
+  return gulp.src(config.sync.src)
+    .pipe(gulp.dest(dest));
 });
-
-function endsWith(str, suffix) {
-    return str.indexOf(suffix, str.length - suffix.length) !== -1;
-}
 
 gulp.task('exec', ['sync'], function() {
   if (config.sailfish.autoLaunch) {
@@ -95,67 +69,59 @@ gulp.task('exec', ['sync'], function() {
 gulp.task('unmountSshfs', function() {
   try {
     return gulp.srch('').pipe(shell('umount ' + config.mount));
-  }
-  catch(e) {}
+  } catch (e) {}
 });
 
 gulp.task('createSshfs', ['unmountSshfs'], function() {
+  util.log('mapping sshfs ' + config.sshfs.user + '@' + config.sshfs.host);
+
   try {
     fs.mkdirSync(config.mount);
-  } catch(e) {
-    if ( e.code != 'EEXIST' ) throw e;
+  } catch (e) {
+    if (e.code != 'EEXIST') throw e;
   }
 
-	return gulp.src('').pipe(
-    shell('sshfs <%= host %>:/ <%= mntDir %> -p <%= port %> -o IdentityFile=<%= keyfile %>'
-      , {
-				templateData: {
-					host: config.sshfs.user + '@' + config.sshfs.host,
-					mntDir: config.mount,
-					port: config.sshfs.port,
-					keyfile: config.sshfs.keyfile
-				}
-			})
-    );
+  return gulp.src('').pipe(
+    shell(
+      'sshfs <%= host %>:/ <%= mntDir %> -p <%= port %> -o IdentityFile=<%= keyfile %>', {
+        templateData: {
+          host: config.sshfs.user + '@' + config.sshfs.host,
+          mntDir: config.mount,
+          port: config.sshfs.port,
+          keyfile: config.sshfs.keyfile
+        }
+      })
+  );
 });
 
 gulp.task('watch', function() {
-	util.log(config.sync);
-	gulp.watch(config.sync.src, ['sync', 'exec']);
+  gulp.watch(config.sync.src, ['sync', 'exec']);
 });
 
-gulp.task('default', ['parseConfig', 'unmountSshfs', 'createSshfs', 'initSsh', 'watch']);
 
 gulp.task('init', function() {
-  storeConfig(createDefaultConfig());
-  util.log('New config file was created in ' + configLoc +
-    '. Edit it before you run this script again.');
-    process.exit(1);
-});
+  var file = argv['reloadfile'];
 
-gulp.task('parseConfig', function() {
-	config = loadConfig(configLoc);
-	if (!config) {
-		util.log('No config file found! Run gulp init first.');
-		process.exit(2);
+  if (!file) {
+    util.log('No --reloafile specified');
+    process.exit(0);
   }
 
+  config = loadConfig(file);
 });
 
-function loadConfig(loc) {
-	var data = false;
-	try {
-		data = fs.readFileSync(loc, 'utf8');
-	} catch (e) {
-		if (e instanceof Error) {
-			if (e.code !== 'ENOENT') {
-				throw e;
-			}
-		}
-	}
-	return JSON.parse(data);
-}
+gulp.task('default', ['unmountSshfs', 'createSshfs', 'initSsh', 'watch']);
 
-function storeConfig(loc, config) {
-  fs.writeFileSync(configLoc, JSON.stringify(loc, null, 4));
+function loadConfig(loc) {
+  var data = false;
+  try {
+    data = fs.readFileSync(loc, 'utf8');
+  } catch (e) {
+    if (e instanceof Error) {
+      if (e.code !== 'ENOENT') {
+        throw e;
+      }
+    }
+  }
+  return JSON.parse(data);
 }

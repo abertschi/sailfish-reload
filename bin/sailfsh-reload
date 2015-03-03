@@ -1,0 +1,120 @@
+#!/usr/bin/env node
+
+'use strict';
+
+require('shelljs/global');
+var gulp = require('gulp');
+var Liftoff = require('liftoff');
+var interpret = require('interpret');
+var v8flags = require('v8flags');
+var argv = require('minimist')(process.argv.slice(2));
+var fs = require('fs');
+var findup = require('findup');
+var chalk = require('chalk');
+var spawn = require('child_process').spawn;
+
+
+var SfReload = new Liftoff({
+	name: 'sailfish-reload',
+	moduleName: 'sailfish-reload',
+	configName: 'reloadfile.json',
+	processTitle: 'sailfish-reload',
+	extensions: interpret.jsVariants,
+	v8flags: v8flags
+}).on('require', function(name, module) {
+	console.log('Loading:', name);
+}).on('requireFail', function(name, err) {
+	console.log('Unable to load:', name, err);
+}).on('respawn', function(flags, child) {
+	console.log('Detected node flags:', flags);
+	console.log('Respawned to PID:', child.pid);
+});
+
+
+SfReload.launch({
+	cwd: argv.cwd,
+	configPath: argv.reloadfile,
+	require: argv.require,
+	completion: argv.completion,
+	verbose: argv.verbose
+}, invoke);
+
+function invoke(env) {
+	if (argv.verbose) {
+		console.log('LIFTOFF SETTINGS:', this);
+		console.log('CLI OPTIONS:', argv);
+		console.log('CWD:', env.cwd);
+		console.log('LOCAL MODULES PRELOADED:', env.require);
+		console.log('SEARCHING FOR:', env.configNameRegex);
+		console.log('FOUND CONFIG AT:', env.configPath);
+		console.log('CONFIG BASE DIR:', env.configBase);
+		console.log('YOUR LOCAL MODULE IS LOCATED:', env.modulePath);
+		console.log('LOCAL PACKAGE.JSON:', env.modulePackage);
+		console.log('CLI PACKAGE.JSON', require('../package'));
+	}
+
+	if (!which('sshfs')) {
+		console.log('Sorry, sshfs was not found.');
+		exit(1);
+	}
+	if (!which('ssh')) {
+		console.log('Sorry, ssh was not found.');
+		exit(1);
+	}
+
+	if (process.cwd() !== env.cwd) {
+		process.chdir(env.cwd);
+		console.log('Working directory changed to', env.cwd);
+	}
+
+	if (!env.modulePath) {
+		console.log('sailfish-reload not found in:', env.cwd);
+		//process.exit(1);
+	}
+
+  var reloadfileLoc = env.cwd + '/reloadfile.json';
+
+  if (argv['create-reloadfile']) {
+    var tmpl = require('../reloadfile-tmpl');
+    storeConfig(reloadfileLoc, tmpl)
+    console.log('reloadfile created.');
+    process.exit(1);
+  }
+
+  var configFile = require(reloadfileLoc);
+	if (!configFile) {
+		console.log('No sailfish-reloadfile found.');
+    process.exit(1);
+	}
+
+/*
+  var sfReload = require('../index.js');
+	sfReload.startReload(configFile); */
+
+  var exec = spawn('node',
+		['../node_modules/gulp/bin/gulp.js',
+		'--cwd', env.cwd,
+		'--gulpfile', '../gulpfile.js',
+		'--reloadfile', reloadfileLoc]);
+
+  exec.stdout.on('data', function (data) {
+		process.stdout.write('' + data);
+  });
+
+  exec.stderr.on('data', function (data) {
+		process.stdout.write(chalk.red('' + data));
+  });
+
+  exec.on('exit', function (code) {
+    console.log('child process exited with code ' + code);
+  });
+
+	exec.on('error', function (data) {
+		console.log(chalk.red(''+ data));
+	});
+
+}
+
+function storeConfig(loc, config) {
+  fs.writeFileSync(loc, JSON.stringify(config, null, 4));
+}

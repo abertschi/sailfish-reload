@@ -2,17 +2,25 @@
   "name": "qml-reaload",
   "version": "0.0.1",
   "description": "Auto synces source changes to Jolla or Emulator",
-  "main": "gulpfile.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Andrin Bertschi",
   "license": "MIT",
   "dependencies": {
+    "chalk": "^1.0.0",
+    "findup": "^0.1.5",
+    "findup-sync": "^0.2.1",
+    "gulp": "^3.8.11",
+    "gulp-prompt": "^0.1.2",
     "gulp-shell": "^0.3.0",
     "gulp-ssh": "^0.3.3",
     "gulp-util": "^3.0.4",
-    "gulp": "^3.8.11",
-    "gulp-prompt": "^0.1.2"
+    "interpret": "^0.5.1",
+    "liftoff": "^2.0.2",
+    "minimist": "^1.1.0",
+    "shelljs": "^0.3.0",
+    "v8flags": "^2.0.2"
   }
 }
