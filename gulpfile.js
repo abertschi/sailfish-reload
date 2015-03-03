@@ -31,15 +31,14 @@ var gulp = require('gulp'),
 var ssh;
 var config;
 
-function startReload(c) {
-	config = c;
-	gulp.start('default');
-};
+exports.gulp = gulp;
 
-exports.startReload = startReload;
+function setConfig(c) {
+  config = c;
+}
+exports.setConfig =  setConfig;
 
-gulp.task('initSsh', function() {
-	util.log('initializing ssh connection');
+gulp.task('ssh-init', function() {
 
 	var sf = config.sailfish;
 	if (sf.autoLaunch) {
@@ -55,7 +54,7 @@ gulp.task('initSsh', function() {
 	}
 });
 
-gulp.task('sync', function() {
+gulp.task('sync-files', function() {
 	var dest = config.mount + config.sync.dest;
 	util.log('syncing files to ' + dest);
 
@@ -63,7 +62,7 @@ gulp.task('sync', function() {
 		.pipe(gulp.dest(dest));
 });
 
-gulp.task('exec', ['sync'], function() {
+gulp.task('restart-app', ['sync-files'], function() {
 	util.log('restarting ', config.sailfish.app);
 
 	if (config.sailfish.autoLaunch) {
@@ -71,16 +70,16 @@ gulp.task('exec', ['sync'], function() {
 	}
 });
 
-gulp.task('unmountSshfs', function() {
-	util.log('unmounting ', config.mount);
+gulp.task('sshfs-umount', function() {
+	util.log('unmounting', config.mount);
 
 	try {
 		return gulp.srch('').pipe(shell('umount ' + config.mount));
 	} catch (e) {}
 });
 
-gulp.task('createSshfs', ['unmountSshfs'], function() {
-	util.log('mapping sshfs ' + config.sshfs.user + '@' + config.sshfs.host);
+gulp.task('sshfs-mount', ['sshfs-umount'], function() {
+	util.log('mounting device to', config.mount);
 
 	try {
 		fs.mkdirSync(config.mount);
@@ -102,34 +101,7 @@ gulp.task('createSshfs', ['unmountSshfs'], function() {
 });
 
 gulp.task('watch', function() {
-	gulp.watch(config.sync.src, ['sync', 'exec']);
+	gulp.watch(config.sync.src, ['sync-files', 'restart-app']);
 });
 
-
-gulp.task('parse-args', function() {
-	var file = argv['reloadfile'];
-
-	if (!file) {
-		util.log('No --reloafile specified');
-		process.exit(0);
-	}
-
-	config = loadConfig(file);
-});
-
-gulp.task('default', ['unmountSshfs', 'createSshfs', 'initSsh', 'watch']);
-gulp.task('cli-default', ['parse-args', 'default']);
-
-function loadConfig(loc) {
-	var data = false;
-	try {
-		data = fs.readFileSync(loc, 'utf8');
-	} catch (e) {
-		if (e instanceof Error) {
-			if (e.code !== 'ENOENT') {
-				throw e;
-			}
-		}
-	}
-	return JSON.parse(data);
-}
+gulp.task('default', ['sshfs-umount', 'sshfs-mount', 'ssh-init', 'watch']);

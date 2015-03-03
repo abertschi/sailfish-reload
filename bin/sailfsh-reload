@@ -3,122 +3,126 @@
 'use strict';
 
 require('shelljs/global');
+var prettyTime = require('pretty-hrtime');
 var gulp = require('gulp');
+var gutil = require('gulp-util');
 var Liftoff = require('liftoff');
 var interpret = require('interpret');
 var v8flags = require('v8flags');
 var argv = require('minimist')(process.argv.slice(2));
 var fs = require('fs');
-var findup = require('findup');
 var chalk = require('chalk');
-var spawn = require('child_process').spawn;
-var path = require('path');
 
-
-var SfReload = new Liftoff({
-	name: 'sailfish-reload',
-	moduleName: 'sailfish-reload',
-	configName: 'reloadfile.json',
-	processTitle: 'sailfish-reload',
-	extensions: interpret.jsVariants,
-	v8flags: v8flags
-}).on('require', function(name, module) {
-	console.log('Loading:', name);
-}).on('requireFail', function(name, err) {
-	console.log('Unable to load:', name, err);
+var liftoff = new Liftoff({
+  name: 'sailfish-reload',
+  configName: 'reloadfile.json',
 });
 
-SfReload.launch({
-	cwd: argv.cwd,
-	configPath: argv.reloadfile,
-	require: argv.require,
-	completion: argv.completion,
-	verbose: argv.verbose
+liftoff.launch({
+  cwd: argv.cwd,
+  configPath: argv.reloadfile,
+  verbose: argv.verbose
 }, invoke);
 
 function invoke(env) {
-	if (argv.verbose) {
-		console.log('LIFTOFF SETTINGS:', this);
-		console.log('CLI OPTIONS:', argv);
-		console.log('CWD:', env.cwd);
-		console.log('LOCAL MODULES PRELOADED:', env.require);
-		console.log('SEARCHING FOR:', env.configNameRegex);
-		console.log('FOUND CONFIG AT:', env.configPath);
-		console.log('CONFIG BASE DIR:', env.configBase);
-		console.log('YOUR LOCAL MODULE IS LOCATED:', env.modulePath);
-		console.log('LOCAL PACKAGE.JSON:', env.modulePackage);
-		console.log('CLI PACKAGE.JSON', require('../package'));
-	}
+  if (argv.verbose) {
+    gutil.log('LIFTOFF SETTINGS:', this);
+    gutil.log('CLI OPTIONS:', argv);
+    gutil.log('CWD:', env.cwd);
+    gutil.log('LOCAL MODULES PRELOADED:', env.require);
+    gutil.log('SEARCHING FOR:', env.configNameRegex);
+    gutil.log('FOUND CONFIG AT:', env.configPath);
+    gutil.log('CONFIG BASE DIR:', env.configBase);
+    gutil.log('YOUR LOCAL MODULE IS LOCATED:', env.modulePath);
+    gutil.log('LOCAL PACKAGE.JSON:', env.modulePackage);
+    gutil.log('CLI PACKAGE.JSON', require('../package'));
+  }
 
-	if (!which('sshfs')) {
-		console.log('Sorry, sshfs was not found.');
-		exit(1);
-	}
-	if (!which('ssh')) {
-		console.log('Sorry, ssh was not found.');
-		exit(1);
-	}
+  if (!which('sshfs')) {
+    gutil.log('Sorry, sshfs was not found.');
+    exit(1);
+  }
 
-	if (process.cwd() !== env.cwd) {
-		process.chdir(env.cwd);
-		console.log('Working directory changed to', env.cwd);
-	}
+  if (!which('ssh')) {
+    gutil.log('Sorry, ssh was not found.');
+    exit(1);
+  }
 
-	if (!env.modulePath) {
-		console.log('sailfish-reload not found in:', env.cwd);
-		process.exit(1);
-	}
+  if (process.cwd() !== env.cwd) {
+    process.chdir(env.cwd);
+    gutil.log('Working directory changed to', env.cwd);
+  }
 
-  var reloadfileLoc = env.cwd + '/reloadfile.json';
-
-  if (argv['create-reloadfile']) {
-    var tmpl = require('../reloadfile-tmpl');
-    storeConfig(reloadfileLoc, tmpl)
-    console.log('reloadfile created.');
+  if (!env.modulePath) {
+    gutil.log('sailfish-reload not found in:', env.cwd);
     process.exit(1);
   }
 
-	var configFile;
-	try {
-   	configFile = require(reloadfileLoc);
-	} catch(e) {}
-	if (!configFile) {
-		console.log('No sailfish-reloadfile found.');
+  var configfile = env.cwd + '/reloadfile.json';
+
+  if (argv['create-reloadfile']) {
+    var tmpl = require('../reloadfile-tmpl');
+    storeConfig(configfile, tmpl)
+    gutil.log('reloadfile.json created.');
     process.exit(1);
-	}
+  }
 
-  // there seem to be 2 ways to trigger gulp
-	// 1) gulp.start() but withou propper login
-	// 2) spawn gulp like on cli
+  var config;
+  try {
+		config = require(configfile);
+  } catch (e) {}
 
-	var gulpLoc = path.resolve(__dirname, '../node_modules/gulp/bin/gulp.js');
-	var gulpfile = path.resolve(__dirname, '../gulpfile.js');
-	console.log(gulpLoc);
-	var exec = spawn('node',
-		[gulpLoc,
-		'--cwd', env.cwd,
-		'--gulpfile', gulpfile,
-		'--reloadfile', reloadfileLoc,
-		'cli-default']);
+  if (!config) {
+    gutil.log('No configfile found in ', configfile);
+    process.exit(1);
+  }
 
-  exec.stdout.on('data', function (data) {
-		process.stdout.write('' + data);
-  });
-
-  exec.stderr.on('data', function (data) {
-		process.stdout.write(chalk.red('' + data));
-  });
-
-  exec.on('exit', function (code) {
-    console.log('child process exited with code ' + code);
-  });
-
-	exec.on('error', function (data) {
-		console.log(chalk.red(''+ data));
-	});
-
+  var sfReload = require('../index.js');
+  logEvents(sfReload.gulp);
+	sfReload.setConfig(config);
+	sfReload.gulp.start('default');
 }
 
 function storeConfig(loc, config) {
   fs.writeFileSync(loc, JSON.stringify(config, null, 4));
+}
+
+// wire up logging events
+function logEvents(gulpInst) {
+  gulpInst.on('task_start', function(e) {
+    gutil.log('starting', '\'' + chalk.cyan(e.task) + '\'...');
+  });
+
+  gulpInst.on('task_stop', function(e) {
+    var time = prettyTime(e.hrDuration);
+		gutil.log('finished', '\'' + chalk.cyan(e.task) + '\'', 'after', chalk.magenta(time)
+    );
+  });
+
+  gulpInst.on('task_err', function(e) {
+    var msg = formatError(e);
+    var time = prettyTime(e.hrDuration);
+		gutil.log('\'' + chalk.cyan(e.task) + '\'', chalk.red('errored after'),
+      chalk.magenta(time));
+		gutil.log(msg);
+  });
+}
+
+function formatError(e) {
+	if (!e.err) {
+		return e.message;
+	}
+
+	// PluginError
+	if (typeof e.err.showStack === 'boolean') {
+		return e.err.toString();
+	}
+
+	// normal error
+	if (e.err.stack) {
+		return e.err.stack;
+	}
+
+	// unknown (string, number, etc.)
+	return new Error(String(e.err)).stack;
 }
