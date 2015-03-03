@@ -55,7 +55,7 @@ function invoke(env) {
 
   if (!env.modulePath) {
     gutil.log('sailfish-reload not found in:', env.cwd);
-    process.exit(1);
+    // process.exit(1);
   }
 
   var configfile = env.cwd + '/reloadfile.json';
@@ -77,7 +77,7 @@ function invoke(env) {
     process.exit(1);
   }
 
-  var sfReload = require('../index.js');
+  var sfReload = require('../gulpfile.js');
   logEvents(sfReload.gulp);
 	sfReload.setConfig(config);
 	sfReload.gulp.start('default');
