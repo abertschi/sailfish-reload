@@ -6,6 +6,8 @@
 
 This module aims to speed up QML prototyping for SailfishOS by autosyncing any changes to a target. It is analogous to an autorefresh feature in web development.
 
+[![NPM](https://nodei.co/npm/sailfish-reload.png)](https://nodei.co/npm/sailfish-reload/)
+
 ![sailfish-reload-demo](http://abertschi.ch/default_public/sailfish-reload-demo.700.gif)
 
 ### Requirements
