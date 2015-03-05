@@ -7,7 +7,9 @@ var gulp = require('gulp'),
 	GulpSsh = require('gulp-ssh'),
 	fs = require('fs'),
 	notify = require("gulp-notify"),
-	argv = require('minimist')(process.argv.slice(2));
+	argv = require('minimist')(process.argv.slice(2)),
+	wait = require('gulp-wait'),
+	print = require('gulp-print');
 
 var ssh;
 var config;
@@ -16,6 +18,7 @@ gulp.task('ssh-init', function() {
 
 	var sf = config.sailfish;
 	if (sf.autoLaunch) {
+
 		ssh = new GulpSsh({
 			ignoreErrors: false,
 			sshConfig: {
@@ -37,39 +40,20 @@ gulp.task('sync-files', function() {
 });
 
 gulp.task('restart-app', ['sync-files'], function() {
-	util.log('restarting ', config.sailfish.app);
+	util.log('start ', config.sailfish.app);
 
 	if (config.sailfish.autoLaunch) {
-		ssh.exec(['sailfish-qml ' + config.sailfish.app]);
+			ssh.exec(['pkill sailfish-qml', { ignoreErrors: true },
+		  					 'sailfish-qml ' + config.sailfish.app]);
 	}
 });
 
 gulp.task('sshfs-umount', function() {
 	util.log('unmounting', config.mount);
 
-		return gulp.src('').pipe(shell('umount ' + config.mount,
-		 { ignoreErrors: true }));
+		return gulp.src('')
+			.pipe(shell('umount ' + config.mount, { ignoreErrors: true }));
 });
-  	
-function formatError(e) {
-	if (!e.err) {
-		return e.message;
-	}
-
-	// PluginError
-	if (typeof e.err.showStack === 'boolean') {
-		return e.err.toString();
-	}
-
-	// normal error
-	if (e.err.stack) {
-		return e.err.stack;
-	}
-
-	// unknown (string, number, etc.)
-	return new Error(String(e.err)).stack;
-}
-
 
 gulp.task('sshfs-mount', ['sshfs-umount'], function() {
 	util.log('mounting device to', config.mount);
@@ -81,8 +65,7 @@ gulp.task('sshfs-mount', ['sshfs-umount'], function() {
 	}
 
 	return gulp.src('').pipe(
-		shell(
-			'sshfs <%= host %>:/ <%= mntDir %> -p <%= port %> -o IdentityFile=<%= keyfile %>', {
+		shell('sshfs <%= host %>:/ <%= mntDir %> -p <%= port %> -o IdentityFile=<%= keyfile %>', {
 				templateData: {
 					host: config.sshfs.user + '@' + config.sshfs.host,
 					mntDir: config.mount,
@@ -108,14 +91,14 @@ gulp.task('parse-args', function() {
 });
 
 gulp.task('watch', function() {
-	gulp.watch(config.sync.src, ['sync-files', 'restart-app']);
+	gulp.watch(config.sync.src, ['restart-app']);
 });
 
 /*
  * Default task for sailfish-reload module.
  * Requires setConfig() to be called in advance
  */
-gulp.task('default', ['sshfs-umount', 'sshfs-mount', 'ssh-init', 'watch']);
+gulp.task('default', ['sshfs-mount', 'ssh-init', 'watch']);
 
 /*
  * Task used for plain gulp with this file as gulpfile
@@ -146,4 +129,23 @@ function loadConfig(loc) {
 		}
 	}
 	return JSON.parse(data);
+}
+
+function formatError(e) {
+	if (!e.err) {
+		return e.message;
+	}
+
+	// PluginError
+	if (typeof e.err.showStack === 'boolean') {
+		return e.err.toString();
+	}
+
+	// normal error
+	if (e.err.stack) {
+		return e.err.stack;
+	}
+
+	// unknown (string, number, etc.)
+	return new Error(String(e.err)).stack;
 }

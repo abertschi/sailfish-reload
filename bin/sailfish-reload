@@ -87,6 +87,11 @@ function storeConfig(loc, config) {
   fs.writeFileSync(loc, JSON.stringify(config, null, 4));
 }
 
+/*
+ * config gulp logging:
+ * source copied from cli script of gulp.js
+ */
+
 // wire up logging events
 function logEvents(gulpInst) {
   gulpInst.on('task_start', function(e) {
@@ -105,6 +110,14 @@ function logEvents(gulpInst) {
 		gutil.log('\'' + chalk.cyan(e.task) + '\'', chalk.red('errored after'),
       chalk.magenta(time));
 		gutil.log(msg);
+  });
+
+  gulpInst.on('task_not_found', function (err) {
+    gutil.log(
+      chalk.red('Task \'' + err.task + '\' is not in your gulpfile')
+    );
+    gutil.log('Please check the documentation for proper gulpfile formatting');
+    process.exit(1);
   });
 }
 

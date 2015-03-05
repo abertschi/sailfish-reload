@@ -11,10 +11,12 @@
     "findup-sync": "^0.2.1",
     "gulp": "^3.8.11",
     "gulp-notify": "^2.2.0",
+    "gulp-print": "^1.1.0",
     "gulp-prompt": "^0.1.2",
     "gulp-shell": "^0.3.0",
     "gulp-ssh": "^0.3.3",
     "gulp-util": "^3.0.4",
+    "gulp-wait": "0.0.2",
     "interpret": "^0.5.1",
     "liftoff": "^2.0.2",
     "minimist": "^1.1.0",
@@ -22,7 +24,6 @@
     "shelljs": "^0.3.0",
     "v8flags": "^2.0.2"
   },
-
   "bin": {
     "sailfish-reload": "./bin/sailfish-reload"
   }

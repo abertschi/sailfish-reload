@@ -82,3 +82,7 @@ Port for sshfs connection.
 
 ##### sailfish.ssh
 Credentials to execute autolaunch command.
+
+### Under the hook
+ - sshfs to map target.
+ - Gulp.js to detect and sync any file changes.
