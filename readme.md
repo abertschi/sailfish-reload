@@ -27,7 +27,7 @@ This module aims to speed up QML prototyping for SailfishOS by autosyncing any c
 
 ### Compatibility
 - Tested under OSX. GNU/Linux should work as well.
-- Not yet tested under Windows. There may be issues due to no native Bash support.
+- Not yet tested under Windows. There may be issues due to no native Bash support (TODO).
 
 ### Sample reloadfile
 ```json
