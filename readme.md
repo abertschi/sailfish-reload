@@ -23,6 +23,10 @@ This module aims to speed up QML prototyping for SailfishOS by autosyncing any c
 - `--reloadfile` specify an exact reloadfile path
 - `--verbose` show some debugging info about how sailfish-reload is working.
 
+### Compatibility
+- Tested under OSX. GNU/Linux should work as well.
+- Not yet tested under Windows. There may be issues due to no native Bash support.
+
 ### Sample reloadfile
 ```json
 {
