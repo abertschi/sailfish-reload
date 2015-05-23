@@ -37,6 +37,8 @@ var ReloadFile = {
 
     load: function (location) {
         config = require(location);
+        this.validate();
+        return config;
     },
 
     validate: function () {
