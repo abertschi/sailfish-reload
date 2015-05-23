@@ -1,116 +1,90 @@
-var gulp 	= require('gulp'),
-	prompt = require('gulp-prompt'),
-	util = require('gulp-util'),
-	shell = require('gulp-shell'),
-	GulpSsh = require('gulp-ssh'),
-	fs = require('fs'),
-	notify = require("gulp-notify"),
-	argv = require('minimist')(process.argv.slice(2)),
-	wait = require('gulp-wait'),
-	print = require('gulp-print');
+var gulp = require('gulp'),
+    gutil = require('gulp-util'),
+    shell = require('gulp-shell'),
+    GulpSsh = require('gulp-ssh'),
+    fs = require('fs'),
+    argv = require('minimist')(process.argv.slice(2));
+
+
+var reloadfile = require('./reloadfile').ReloadFile;
+var AuthMethods = require('./reloadfile').AuthMethods;
+var SyncUtil = require('./sync').SyncUtil;
 
 var ssh;
-var config;
 
-gulp.task('ssh-init', function() {
+gulp.task('ssh-init', function () {
 
-	var sf = config.sailfish;
-	if (sf.autoLaunch) {
+    if (reloadfile.supportsRun()) {
+        var config = reloadfile.config;
 
-		ssh = new GulpSsh({
-			ignoreErrors: false,
-			sshConfig: {
-				host: sf.ssh.host,
-				port: sf.ssh.port,
-				username: sf.ssh.user
-				//privateKey: require('fs').readFileSync(sf.ssh.keyfile)
-			}
-		});
-	}
+        var sshConfig = {
+            host: config.device.host,
+            port: config.device.port,
+            username: config.run.user
+        };
+
+        switch (reloadfile.getAuthModeRun()) {
+            case AuthMethods.KEYFILE:
+                sshConfig.privateKey = config.run.keyfile;
+                break;
+            case AuthMethods.USERNAME_PASSWORD:
+                sshConfig.password = config.run.password;
+                break;
+            case AuthMethods.PUBLIC_KEY:
+                break;
+            default:
+        }
+
+        ssh = new GulpSsh({
+            ignoreErrors: false,
+            sshConfig: sshConfig
+        });
+    }
 });
 
-gulp.task('sync-files', function() {
-	var dest = config.mount + config.sync.dest;
-	util.log('syncing files to ' + dest);
+gulp.task('sync-files', function () {
+    var dest = config.mount + config.sync.dest;
+    gutil.log('syncing files to ' + dest);
 
-	return gulp.src(config.sync.src)
-		.pipe(gulp.dest(dest));
+    return gulp.src(config.sync.src)
+        .pipe(gulp.dest(dest));
 });
 
-gulp.task('restart-app', ['sync-files'], function() {
-	util.log('start ', config.sailfish.app);
+gulp.task('exec', ['sync-files'], function () {
+    gutil.log('start ', config.sailfish.app);
 
-	if (config.sailfish.autoLaunch) {
-			ssh.exec(['pkill sailfish-qml', { ignoreErrors: true },
-		  					 'sailfish-qml ' + config.sailfish.app]);
-	}
+    if (config.sailfish.autoLaunch) {
+        ssh.exec(['pkill sailfish-qml', {ignoreErrors: true},
+            'sailfish-qml ' + config.sailfish.app]);
+    }
 });
 
-gulp.task('sshfs-umount', function() {
-	util.log('unmounting', config.mount);
+gulp.task('sshfs-umount', function () {
 
-		return gulp.src('')
-			.pipe(shell('umount ' + config.mount, { ignoreErrors: true }));
+    var mount = SyncUtil.getClientMountDir();
+    SyncUtil.unmountFs();
+
+    gutil.log('Unmounting target ', mount);
+
 });
 
-gulp.task('sshfs-mount', ['sshfs-umount'], function() {
-	util.log('mounting device to', config.mount);
+gulp.task('sshfs-mount', ['sshfs-umount'], function () {
 
-	try {
-		fs.mkdirSync(config.mount);
-	} catch (e) {
-		if (e.code != 'EEXIST') throw e;
-	}
+    SyncUtil.mountFs();
+    var mount = SyncUtil.getClientMountDir();
+    gutil.log("Target successfully mounted to ", mount);
 
-	return gulp.src('').pipe(
-		shell('sshfs <%= host %>:/ <%= mntDir %> -p <%= port %>', {
-				templateData: {
-					host: config.sshfs.user + '@' + config.sshfs.host,
-					mntDir: config.mount,
-					port: config.sshfs.port
-					//keyfile: config.sshfs.keyfile
-				}
-			})
-	);
 });
 
 gulp.on('err', function () {
-	util.beep();
+    gutil.beep();
 });
 
-gulp.task('parse-args', function() {
-	var file = argv['reloadfile'];
-
-	if (!file) {
-		util.log('No --reloafile specified');
-		process.exit(0);
-	}
-	config = loadConfig(file);
+gulp.task('watch', function () {
+    gulp.watch(config.sync.src, ['exec']);
 });
 
-gulp.task('watch', function() {
-	gulp.watch(config.sync.src, ['restart-app']);
-});
-
-/*
- * Default task for sailfish-reload module.
- * Requires setConfig() to be called in advance
- */
 gulp.task('default', ['sshfs-mount', 'ssh-init', 'watch']);
 
-/*
- * Task used for plain gulp with this file as gulpfile
- * Requires --reloadfile <path> with config to be set
- * (see reloadfile-tmpl.json).
- */
-gulp.task('cli-default', ['parse-args', 'default']);
-
-// Export gulp for gulp.start()
 exports.gulp = gulp;
 
-// Set configuration used in default task (see reloadfile-tmpl.json)
-function setConfig(c) {
-  config = c;
-}
-
-exports.setConfig =  setConfig;
