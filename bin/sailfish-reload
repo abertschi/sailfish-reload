@@ -1,3 +1,92 @@
 #!/usr/bin/env node
 
-require('../src/launch')
+'use strict';
+
+require('shelljs/global');
+
+var reloadfile          = require('./reloadfile').ReloadFile;
+var utils               = require('./utils');
+
+var gutil               = require('gulp-util');
+var Liftoff             = require('liftoff');
+var argv                = require('minimist')(process.argv.slice(2));
+
+var Reload = new Liftoff({
+    name: 'sailfish-reload',
+    configName: 'reloadfile'
+});
+Reload.launch({
+    cwd: argv.cwd,
+    configPath: argv.reloadfile,
+    require: argv.require,
+    completion: argv.completion,
+    verbose: argv.verbose
+}, invoke);
+
+function invoke(env) {
+
+    if (argv.verbose) {
+        gutil.log('LIFTOFF SETTINGS:', this);
+        gutil.log('CLI OPTIONS:', argv);
+        gutil.log('CWD:', env.cwd);
+        gutil.log('LOCAL MODULES PRELOADED:', env.require);
+        gutil.log('SEARCHING FOR:', env.configNameRegex);
+        gutil.log('FOUND CONFIG AT:', env.configPath);
+        gutil.log('CONFIG BASE DIR:', env.configBase);
+        gutil.log('YOUR LOCAL MODULE IS LOCATED:', env.modulePath);
+        gutil.log('LOCAL PACKAGE.JSON:', env.modulePackage);
+        gutil.log('CLI PACKAGE.JSON', require('../package'));
+    }
+
+    if (!which('sshfs')) {
+        gutil.log('Sorry, sshfs was not found.');
+        exit(1);
+    }
+
+    if (!which('ssh')) {
+        gutil.log('Sorry, ssh was not found.');
+        exit(1);
+    }
+
+    if (process.cwd() !== env.cwd) {
+        process.chdir(env.cwd);
+        gutil.log('Working directory changed to', env.cwd);
+    }
+
+    if (!env.modulePath) {
+        gutil.log('sailfish-reload not found in:', env.cwd);
+    }
+
+    if (!env.configPath) {
+        env.configPath = "./reloadfile.json";
+    }
+
+    if (argv['create-reloadfile']) {
+        reloadfile.createTemplate(env.configPath);
+        gutil.log('reloadfile.json created at ' + env.configPath);
+        process.exit(1);
+    }
+
+    var config;
+    try {
+        config = reloadfile.load(env.configPath);
+    } catch (e) {
+    }
+
+    if (!config) {
+        gutil.log('No reloadfile found in ', env.configPath);
+        process.exit(1);
+    }
+
+    if (argv.verbose) {
+        gutil.log("USING RELOADFILE:")
+        gutil.log(JSON.stringify(config, null, 4));
+    }
+
+    var gulpReload = require('gulpfile');
+
+    utils.logEvents(gulpReload.gulp);
+
+    gulpReload.setConfig(config);
+    gulpReload.gulp.start('default');
+}
