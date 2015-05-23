@@ -1,6 +1,4 @@
-// gulpfile.js for sailfish-reload
-
-var gulp = require('gulp'),
+var gulp 	= require('gulp'),
 	prompt = require('gulp-prompt'),
 	util = require('gulp-util'),
 	shell = require('gulp-shell'),
@@ -24,8 +22,8 @@ gulp.task('ssh-init', function() {
 			sshConfig: {
 				host: sf.ssh.host,
 				port: sf.ssh.port,
-				username: sf.ssh.user,
-				privateKey: require('fs').readFileSync(sf.ssh.keyfile)
+				username: sf.ssh.user
+				//privateKey: require('fs').readFileSync(sf.ssh.keyfile)
 			}
 		});
 	}
@@ -65,12 +63,12 @@ gulp.task('sshfs-mount', ['sshfs-umount'], function() {
 	}
 
 	return gulp.src('').pipe(
-		shell('sshfs <%= host %>:/ <%= mntDir %> -p <%= port %> -o IdentityFile=<%= keyfile %>', {
+		shell('sshfs <%= host %>:/ <%= mntDir %> -p <%= port %>', {
 				templateData: {
 					host: config.sshfs.user + '@' + config.sshfs.host,
 					mntDir: config.mount,
-					port: config.sshfs.port,
-					keyfile: config.sshfs.keyfile
+					port: config.sshfs.port
+					//keyfile: config.sshfs.keyfile
 				}
 			})
 	);
@@ -116,36 +114,3 @@ function setConfig(c) {
 }
 
 exports.setConfig =  setConfig;
-
-function loadConfig(loc) {
-	var data = false;
-	try {
-		data = fs.readFileSync(loc, 'utf8');
-	} catch (e) {
-		if (e instanceof Error) {
-			if (e.code !== 'ENOENT') {
-				throw e;
-			}
-		}
-	}
-	return JSON.parse(data);
-}
-
-function formatError(e) {
-	if (!e.err) {
-		return e.message;
-	}
-
-	// PluginError
-	if (typeof e.err.showStack === 'boolean') {
-		return e.err.toString();
-	}
-
-	// normal error
-	if (e.err.stack) {
-		return e.err.stack;
-	}
-
-	// unknown (string, number, etc.)
-	return new Error(String(e.err)).stack;
-}
