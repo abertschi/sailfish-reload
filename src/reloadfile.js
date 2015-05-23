@@ -31,14 +31,15 @@ var ReloadFile = {
         }
     },
 
+
     createTemplate: function (location) {
         fs.writeFileSync(location, JSON.stringify(this.config, null, 4));
     },
 
     load: function (location) {
-        config = require(location);
+        this.config = require(location);
         this.validate();
-        return config;
+        return this.config;
     },
 
     validate: function () {
