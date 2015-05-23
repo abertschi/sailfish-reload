@@ -13,7 +13,7 @@ var ReloadFile = {
 
     config: {
         device: {
-            port: "",
+            host: "",
             port: "",
         },
         sync: {
