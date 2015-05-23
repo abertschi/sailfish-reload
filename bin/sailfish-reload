@@ -4,8 +4,8 @@
 
 require('shelljs/global');
 
-var reloadfile          = require('./reloadfile').ReloadFile;
-var utils               = require('./utils');
+var reloadfile          = require('../src/reloadfile').ReloadFile;
+var utils               = require('../src/utils');
 
 var gutil               = require('gulp-util');
 var Liftoff             = require('liftoff');
@@ -67,9 +67,11 @@ function invoke(env) {
         process.exit(1);
     }
 
+    gutil.log(reloadfile);
     var config;
     try {
         config = reloadfile.load(env.configPath);
+        console.log(config);
     } catch (e) {
     }
 
@@ -83,10 +85,9 @@ function invoke(env) {
         gutil.log(JSON.stringify(config, null, 4));
     }
 
-    var gulpReload = require('gulpfile');
+    var gulpReload = require('../src/gulpfile');
 
     utils.logEvents(gulpReload.gulp);
 
-    gulpReload.setConfig(config);
     gulpReload.gulp.start('default');
 }
