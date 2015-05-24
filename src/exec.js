@@ -29,11 +29,6 @@ var ExecUtil = {
                 case AuthMethods.KEYFILE:
                     sshConfig.privateKey = config.run.keyfile;
                     break;
-                case AuthMethods.USERNAME_PASSWORD:
-                    sshConfig.password = config.run.password;
-                    break;
-                case AuthMethods.PUBLIC_KEY:
-                    break;
                 default:
             }
 
