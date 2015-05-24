@@ -1,4 +1,4 @@
-sailfish-reload - Auto update source changes and sync them to the Sailfish Emulator or the Jolla Phone.
+sailfish-reload - Auto update source changes and sync them to a target device.
 Copyright (c) 2015 Andrin Bertschi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
