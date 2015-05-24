@@ -28,7 +28,7 @@
     "gulp-print": "^1.1.0",
     "gulp-prompt": "^0.1.2",
     "gulp-shell": "^0.3.0",
-    "gulp-ssh": "^0.3.3",
+    "gulp-ssh": "https://github.com/abertschi/gulp-ssh/archive/v0.4.0-bean-npm-rel.tar.gz",
     "gulp-util": "^3.0.4",
     "gulp-wait": "0.0.2",
     "interpret": "^0.5.1",
