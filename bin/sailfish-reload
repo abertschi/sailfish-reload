@@ -5,7 +5,7 @@
 require('shelljs/global');
 
 var Reloadfile          = require('../src/reloadfile').ReloadFile;
-var BootstrapUtils               = require('./utils');
+var BootstrapUtils      = require('./utils');
 
 var gutil               = require('gulp-util');
 var Liftoff             = require('liftoff');
@@ -50,11 +50,6 @@ function invoke(env) {
         exit(1);
     }
 
-    if (process.cwd() !== env.cwd) {
-        process.chdir(env.cwd);
-        gutil.log('Working directory changed to', env.cwd);
-    }
-
     if (!env.modulePath) {
         gutil.log('sailfish-reload not found in:', env.cwd);
     }
@@ -81,6 +76,11 @@ function invoke(env) {
         gutil.log("Use --reloadfile to set the file path if it is not in the current directory " +
                   "or run --create-reloadfile to create an empty one.");
         process.exit(1);
+    }
+
+    if (process.cwd() !== env.cwd) {
+        process.chdir(env.cwd);
+        gutil.log('Working directory changed to', env.cwd);
     }
 
     gutil.log("Reloadfile sucessfully loaded: " + env.configPath);
