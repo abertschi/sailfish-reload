@@ -1,10 +1,24 @@
 {
   "name": "sailfish-reload",
-  "version": "0.0.1",
-  "description": "Auto update source changes and sync them to the Sailfish Emulator or the Jolla Phone.",
-  "main": "gulpfile.js",
+  "version": "0.1.0-rc-1",
+  "description": "Auto update source changes and sync them to the a target device like the Sailfish Emulator or the Jolla Phone.",
+  "main": "src/gulpfile.js",
   "author": "Andrin Bertschi",
   "license": "MIT",
+  "keywords": [
+    "sailfish",
+    "reload",
+    "sshfs",
+    "gulp"
+  ],
+  "bugs": {
+    "url": "https://github.com/abertschi/sailfish-reload/issues",
+    "email": "andrin.bertschi@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abertschi/sailfish-reload.git"
+  },
   "dependencies": {
     "chalk": "^1.0.0",
     "findup": "^0.1.5",
@@ -14,14 +28,19 @@
     "gulp-print": "^1.1.0",
     "gulp-prompt": "^0.1.2",
     "gulp-shell": "^0.3.0",
-    "gulp-ssh": "^0.3.3",
+    "gulp-ssh": "https://github.com/abertschi/gulp-ssh/archive/v0.4.0-bean-npm-rel-2.tar.gz",
     "gulp-util": "^3.0.4",
     "gulp-wait": "0.0.2",
     "interpret": "^0.5.1",
+    "keymirror": "^0.1.1",
     "liftoff": "^2.0.2",
     "minimist": "^1.1.0",
+    "mkdirp": "^0.5.1",
     "pretty-hrtime": "^1.0.0",
+    "randomstring": "^1.0.5",
     "shelljs": "^0.3.0",
+    "string-format": "^0.5.0",
+    "temp": "^0.8.1",
     "v8flags": "^2.0.2"
   },
   "bin": {
