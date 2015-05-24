@@ -59,10 +59,15 @@ This module aims to speed up QML prototyping for SailfishOS by auto syncing chan
     "port": ""
 }
 ```
-Host and port of target device.  
-One may configure multiple reloadfiles for more than one device and use the `--reloadfile` flag to specify the file.
+The device section covers the host and the port of target device.
+One may configure multiple reload files for more than one device and use the `--reloadfile` flag to specify the file.
 
 #### sync
+The sync section defines the user being used to mount the target device.
+Further it defines what to sync with the target.
+
+The `keyfile` property is optional. If not set, the script prompts to enter the password.
+
 
 ```
 "sync": 
