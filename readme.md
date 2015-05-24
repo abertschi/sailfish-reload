@@ -38,23 +38,31 @@ This module aims to speed up QML prototyping for SailfishOS by auto syncing chan
     "sync": {
         "user": "root",
         "keyfile": "/sailfish-sdk/vmshare/ssh/private_keys/SailfishOS_Emulator/root",
-        "from": ["./harbour-wlan-keyboard/main.py",
-                 "./harbour-wlan-keyboard/qml/**/*.*"],
-        "to": "/usr/share/harbour-wlan-keyboard"
+        "files": [
+        {
+            "from": ["./src/**/*.*"],
+            "to": "/usr/share/test/src"
+        },
+        {
+            "from": ["./qml/**/*.*"],
+            "to": "/usr/share/test/qml"
+        },
+        {
+            "from": ["./test.pro", "./test.test"],
+            "to": "/usr/share/test"
+        }]
     },
     "run": {
         "user": "nemo",
         "keyfile": "/sailfish-sdk/vmshare/ssh/private_keys/SailfishOS_Emulator/nemo",
-        "exec": ["pkill sailfish-qml",
-                 "sailfish-qml harbour-wlan-keyboard"]
+        "exec": ["echo hello"]
     }
 }
 ```
 
 #### device
 ```
-"device":
-{
+"device": {
     "host": "",
     "port": ""
 }
@@ -70,12 +78,14 @@ The `keyfile` property is optional. If not set, the script prompts to enter the 
 
 
 ```
-"sync": 
-{
+"sync": {
     "user": "",
     "keyfile": "",
-    "from": [],
-    "to": ""
+    "files": [
+        {
+            "from": [],
+            "to": ""
+        }]
 }
 ```
 #### run
