@@ -2,93 +2,95 @@
 [![twitter: @andrinbertschi]( https://img.shields.io/badge/twitter-andrinbertschi-yellow.svg?style=flat-square)](twitter.com/andrinbertschi)  
 
 # sailfish-reload
-   > Auto update source changes and sync them to the Sailfish Emulator or the Jolla Phone.
+   > Auto update source changes and sync them to the a target device like the Sailfish Emulator or the Jolla Phone.
 
-This module aims to speed up QML prototyping for SailfishOS by autosyncing any changes to a target. It is analogous to an autorefresh feature in web development.
+This module aims to speed up QML prototyping for SailfishOS by auto syncing changes to a target. It is analogous to an auto refresh feature in web development.
 
 [![NPM](https://nodei.co/npm/sailfish-reload.png)](https://nodei.co/npm/sailfish-reload/)
 
 ![sailfish-reload-demo](http://abertschi.ch/default_public/sailfish-reload-demo.700.gif)
 
 ### Requirements
-0. sailfish-sdk - https://sailfishos.org/develop/
 1. node.js - http://nodejs.org/download/  
 2. sshfs - http://fuse.sourceforge.net/sshfs.html  
 
 ### How to use it
 1. Install globally with `npm install -g sailfish-reload`.
 2. Create and configure reloadfile. Use `sailfish-reload --create-reloadfile`.
-3. Start autosyncing with `sailfish-reload`
+3. Start auto syncing with `sailfish-reload`
 
 #### CLI options
 - `--cwd` specify the working directory to run sailfish-reload
 - `--reloadfile` specify an exact reloadfile path
 - `--verbose` show some debugging info about how sailfish-reload is working.
+- `--create-reloadfile` generate a configuration file
 
 ### Compatibility
 - Tested under OSX. GNU/Linux should work as well.
-- Not yet tested under Windows. There may be issues due to no native Bash support (TODO).
 
 ### Sample reloadfile
 ```json
 {
-    "sshfs": {
+    "device": {
         "host": "localhost",
-        "user": "root",
-        "port": "2223",
-        "keyfile": "/Applications/sailfish-sdk/vmshare/ssh/private_keys/SailfishOS_Emulator/root"
+        "port": "2223"
     },
     "sync": {
-        "src": [
-            "/home/abertschi/beandata/pgm/proj/sailfish-wlan-keyboard/harbour-wlan-keyboard/qml/**/*.*"
-        ],
-        "dest": "/usr/share/harbour-wlan-keyboard/qml"
+        "user": "root",
+        "password": "",
+        "keyfile": "/sailfish-sdk/vmshare/ssh/private_keys/SailfishOS_Emulator/root",
+        "from": ["./harbour-wlan-keyboard/main.py",
+                 "./harbour-wlan-keyboard/qml/**/*.*"],
+        "to": "/usr/share/harbour-wlan-keyboard"
     },
-    "mount": "/mnt/jolla",
-    "sailfish": {
-        "autoLaunch": true,
-        "app": "harbour-wlan-keyboard",
-        "ssh": {
-            "host": "localhost",
-            "user": "nemo",
-            "port": "2223",
-            "keyfile": "/Applications/sailfish-sdk/vmshare/ssh/private_keys/SailfishOS_Emulator/nemo"
-        }
+    "run": {
+        "user": "nemo",
+        "password": "",
+        "keyfile": "/sailfish-sdk/vmshare/ssh/private_keys/SailfishOS_Emulator/nemo",
+        "exec": ["pkill sailfish-qml",
+                 "sailfish-qml harbour-wlan-keyboard"]
     }
 }
 ```
 
-#### sshfs
-Credentials used to mount filesystem of target device to host.
-
-##### sshfs.host
-Ip address of the target. Either Emulator or jolla phone.
-
-##### sshfs.user
-User for sshfs connection.
-
-##### sshfs.port
-Port for sshfs connection.
-
-##### sshfs.keyfile
+#### device
+```
+"device":
+{
+    "host": "",
+    "port": ""
+}
+```
+Host and port of target device.  
+One may configure multiple reloadfiles for more than one device and use the `--reloadfile` flag to specify the file.
 
 #### sync
 
-##### sshfs.src
+```
+"sync": 
+{
+    "user": "",
+    "password": "",
+    "keyfile": "",
+    "from": [],
+    "to": ""
+}
+```
+#### run
+```
+"run": {
+    "user": "",
+    "password": "",
+    "keyfile": "",
+    "exec": []
+}
+```
 
-##### sshfs.dest
+### Under the hood
+ - sshfs to mount target filesystem
+ - ssh to execute exec commands
+ - Gulp.js to detect and sync any file changes
 
-##### mount
 
-##### sailfish
-
-##### sailfish.autoLaunch
-
-##### sailfish.app
-
-##### sailfish.ssh
-Credentials to execute autolaunch command.
-
-### Under the hook
- - sshfs to map target.
- - Gulp.js to detect and sync any file changes.
+##Contributing
+Help is always welcome. Contribute to the project by forking and submitting a pull request.
