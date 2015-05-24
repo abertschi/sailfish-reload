@@ -19,7 +19,6 @@ var SyncUtil = {
 
         switch (Reloadfile.getAuthModeSync()) {
             case AuthMethods.KEYFILE:
-
                 var user =  config.sync.user;
                 var host = config.device.host;
                 var port = config.device.port;
@@ -28,12 +27,8 @@ var SyncUtil = {
                 var keyfile = config.sync.privateKeyFile;
 
                 var cmd = util.format('sshfs -o ssh_command="ssh -p %s -i %s" %s@%s:%s %s', port, keyfile, user, host, targetMount, mount );
-
                 gutil.log("Mounting filesystem with [" + cmd + "]");
                 exec(cmd);
-
-                break;
-            case AuthMethods.USERNAME_PASSWORD:
 
                 break;
             case AuthMethods.PUBLIC_KEY:
