@@ -55,7 +55,7 @@ function invoke(env) {
     }
 
     if (!env.configPath) {
-        env.configPath = env.cwd + "./reloadfile.json";
+        env.configPath = env.cwd + "/reloadfile.json";
     }
 
     if (argv['create-reloadfile']) {
