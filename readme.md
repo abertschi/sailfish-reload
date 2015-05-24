@@ -2,7 +2,7 @@
 [![twitter: @andrinbertschi]( https://img.shields.io/badge/twitter-andrinbertschi-yellow.svg?style=flat-square)](twitter.com/andrinbertschi)  
 
 # sailfish-reload
-   > Auto update source changes and sync them to the a target device like the Sailfish Emulator or the Jolla Phone.
+   > Auto update source changes and sync them to a target device like the Sailfish Emulator or the Jolla Phone.
 
 This module aims to speed up QML prototyping for SailfishOS by auto syncing changes to a target.
 It is analogous to an auto refresh feature in web development.
