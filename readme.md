@@ -109,6 +109,7 @@ One may use it to execute commands on the target device after files are synchron
  - ssh to execute exec commands
  - Gulp.js to detect and sync any file changes
 
+There is no dependency to SailfishOS. One may use that module or componets of it for other devices or purposes.
 
 ##Contributing
 Help is always welcome. Contribute to the project by forking and submitting a pull request.
