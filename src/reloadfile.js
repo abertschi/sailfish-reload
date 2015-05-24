@@ -46,7 +46,7 @@ var ReloadFile = {
 
     },
 
-    supportsRun: function () {
+    supportsExec: function () {
         var result = false;
 
         if (this.config.run &&
