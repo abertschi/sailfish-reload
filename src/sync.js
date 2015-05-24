@@ -1,17 +1,13 @@
-var temp  = require('temp'),
-    fs    = require('fs'),
-    util  = require('util'),
-    path  = require('path'),
+var util  = require('util'),
     gutil = require('gulp-util'),
     exec  = require('child_process').execSync,
-    shell = require('gulp-shell'),
     randomstring = require('randomstring'),
     mkdirp = require('mkdirp');
 
 var Reloadfile = require('./reloadfile').ReloadFile;
 var AuthMethods = require('./reloadfile').AuthMethods;
 
-var _clientMountDir = {};
+var _clientMountDir = null;
 
 var SyncUtil = {
 
@@ -33,12 +29,12 @@ var SyncUtil = {
 
                 var cmd = util.format('sshfs -o ssh_command="ssh -p %s -i %s" %s@%s:%s %s', port, keyfile, user, host, targetMount, mount );
 
-                gutil.log("Mounting filesystem with " + cmd);
+                gutil.log("Mounting filesystem with [" + cmd + "]");
                 exec(cmd);
 
                 break;
             case AuthMethods.USERNAME_PASSWORD:
-                
+
                 break;
             case AuthMethods.PUBLIC_KEY:
                 break;
@@ -47,13 +43,16 @@ var SyncUtil = {
     },
 
     unmountFs: function() {
+        if (_clientMountDir) {
+            var cmd = util.format("umount %s", _clientMountDir);
+            gutil.log(_clientMountDir);
+            gutil.log("Unmounting filesystem with [", cmd + "]");
+            exec(cmd);
+        }
+    },
 
-        var cmd = "umount <%= mount %>";
-        var templateData = {
-            mount: _clientMountDir
-        };
-
-        shell(cmd, { templateData: templateData, ignoreErrors: true } );
+    isMounted: function() {
+        return this.getClientMountDir() != null;
     },
 
     getClientMountDir: function() {
@@ -63,9 +62,7 @@ var SyncUtil = {
 
 exports.SyncUtil = SyncUtil;
 
-
 function _mkDir() {
     var name = "/tmp/mount/" + randomstring.generate(4);
     return mkdirp.sync(name);
 }
-
