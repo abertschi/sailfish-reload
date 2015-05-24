@@ -37,7 +37,6 @@ This module aims to speed up QML prototyping for SailfishOS by auto syncing chan
     },
     "sync": {
         "user": "root",
-        "password": "",
         "keyfile": "/sailfish-sdk/vmshare/ssh/private_keys/SailfishOS_Emulator/root",
         "from": ["./harbour-wlan-keyboard/main.py",
                  "./harbour-wlan-keyboard/qml/**/*.*"],
@@ -45,7 +44,6 @@ This module aims to speed up QML prototyping for SailfishOS by auto syncing chan
     },
     "run": {
         "user": "nemo",
-        "password": "",
         "keyfile": "/sailfish-sdk/vmshare/ssh/private_keys/SailfishOS_Emulator/nemo",
         "exec": ["pkill sailfish-qml",
                  "sailfish-qml harbour-wlan-keyboard"]
@@ -70,21 +68,25 @@ One may configure multiple reloadfiles for more than one device and use the `--r
 "sync": 
 {
     "user": "",
-    "password": "",
     "keyfile": "",
     "from": [],
     "to": ""
 }
 ```
 #### run
+
+The run section is optional.
+One may use it to execute commands on the target device after files are synchronized.
+
 ```
 "run": {
     "user": "",
-    "password": "",
     "keyfile": "",
     "exec": []
 }
 ```
+
+`exec` is an array containing commands being executed on the target device in their specified order.
 
 ### Under the hood
  - sshfs to mount target filesystem
