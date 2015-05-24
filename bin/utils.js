@@ -7,7 +7,6 @@ var chalk               = require('chalk');
  * source copied from cli script of gulp.js
  */
 
-
 // wire up logging events
 function logEvents(gulpInst) {
     gulpInst.on('task_start', function (e) {
