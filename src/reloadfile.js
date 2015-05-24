@@ -70,7 +70,7 @@ var ReloadFile = {
     getAuthModeRun: function () {
         var result;
 
-        if (this.supportsRun()) {
+        if (this.getAuthModeSync()) {
             if (this.config.run.keyfile &&
                 this.config.run.keyfile != "") {
                 result = AuthMethods.KEYFILE;
