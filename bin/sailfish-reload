@@ -4,8 +4,8 @@
 
 require('shelljs/global');
 
-var reloadfile          = require('../src/reloadfile').ReloadFile;
-var utils               = require('../src/utils');
+var Reloadfile          = require('../src/reloadfile').ReloadFile;
+var BootstrapUtils               = require('./utils');
 
 var gutil               = require('gulp-util');
 var Liftoff             = require('liftoff');
@@ -15,6 +15,8 @@ var Reload = new Liftoff({
     name: 'sailfish-reload',
     configName: 'reloadfile'
 });
+
+
 Reload.launch({
     cwd: argv.cwd,
     configPath: argv.reloadfile,
@@ -58,36 +60,40 @@ function invoke(env) {
     }
 
     if (!env.configPath) {
-        env.configPath = "./reloadfile.json";
+        env.configPath = env.cwd + "./reloadfile.json";
     }
 
     if (argv['create-reloadfile']) {
-        reloadfile.createTemplate(env.configPath);
-        gutil.log('reloadfile.json created at ' + env.configPath);
+        Reloadfile.createTemplate(env.configPath);
+        gutil.log('Empty reloadfile.json created at ' + env.configPath);
+        gutil.log(JSON.stringify(Reloadfile.config, null, 4));
         process.exit(1);
     }
 
-    gutil.log(reloadfile);
     var config;
     try {
-        config = reloadfile.load(env.configPath);
-        console.log(config);
+        config = Reloadfile.load(env.configPath);
     } catch (e) {
     }
 
     if (!config) {
-        gutil.log('No reloadfile found in ', env.configPath);
+        gutil.log('No reloadfile found here: ', env.configPath);
+        gutil.log("Use --reloadfile to set the file path if it is not in the current directory " +
+                  "or run --create-reloadfile to create an empty one.");
         process.exit(1);
     }
+
+    gutil.log("Reloadfile sucessfully loaded: " + env.configPath);
 
     if (argv.verbose) {
         gutil.log("USING RELOADFILE:")
         gutil.log(JSON.stringify(config, null, 4));
     }
 
+    gutil.log("Bootstrapping gulp.js");
     var gulpReload = require('../src/gulpfile');
 
-    utils.logEvents(gulpReload.gulp);
+    BootstrapUtils.logEvents(gulpReload.gulp);
 
     gulpReload.gulp.start('default');
 }
