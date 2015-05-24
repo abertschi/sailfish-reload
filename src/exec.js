@@ -27,7 +27,7 @@ var ExecUtil = {
 
             switch (Reloadfile.getAuthModeRun()) {
                 case AuthMethods.KEYFILE:
-                    sshConfig.privateKey = config.run.keyfile;
+                    sshConfig.privateKey = config.run.privateKeyFile;
                     break;
                 default:
             }

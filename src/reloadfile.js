@@ -19,7 +19,7 @@ var ReloadFile = {
         },
         sync: {
             user: "",
-            keyfile: "",
+            privateKeyFile: "",
             files: [
                 {
                     from: [],
@@ -29,7 +29,7 @@ var ReloadFile = {
         },
         run: {
             user: "",
-            keyfile: "",
+            privateKeyFile: "",
             exec: []
         }
     },
@@ -62,8 +62,8 @@ var ReloadFile = {
 
     getAuthModeSync: function () {
         var result;
-        if (this.config.sync.keyfile &&
-            this.config.sync.keyfile != "") {
+        if (this.config.sync.privateKeyFile &&
+            this.config.sync.privateKeyFile != "") {
             result = AuthMethods.KEYFILE;
 
         } else {
@@ -77,8 +77,8 @@ var ReloadFile = {
         var result;
 
         if (this.getAuthModeSync()) {
-            if (this.config.run.keyfile &&
-                this.config.run.keyfile != "") {
+            if (this.config.run.privateKeyFile &&
+                this.config.run.privateKeyFile != "") {
                 result = AuthMethods.KEYFILE;
 
             } else {

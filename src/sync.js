@@ -25,7 +25,7 @@ var SyncUtil = {
                 var port = config.device.port;
                 var mount = _clientMountDir;
                 var targetMount = "/";
-                var keyfile = config.sync.keyfile;
+                var keyfile = config.sync.privateKeyFile;
 
                 var cmd = util.format('sshfs -o ssh_command="ssh -p %s -i %s" %s@%s:%s %s', port, keyfile, user, host, targetMount, mount );
 

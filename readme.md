@@ -4,7 +4,8 @@
 # sailfish-reload
    > Auto update source changes and sync them to the a target device like the Sailfish Emulator or the Jolla Phone.
 
-This module aims to speed up QML prototyping for SailfishOS by auto syncing changes to a target. It is analogous to an auto refresh feature in web development.
+This module aims to speed up QML prototyping for SailfishOS by auto syncing changes to a target.
+It is analogous to an auto refresh feature in web development.
 
 [![NPM](https://nodei.co/npm/sailfish-reload.png)](https://nodei.co/npm/sailfish-reload/)
 
@@ -37,7 +38,7 @@ This module aims to speed up QML prototyping for SailfishOS by auto syncing chan
     },
     "sync": {
         "user": "root",
-        "keyfile": "/sailfish-sdk/vmshare/ssh/private_keys/SailfishOS_Emulator/root",
+        "privateKeyFile": "/sailfish-sdk/vmshare/ssh/private_keys/SailfishOS_Emulator/root",
         "files": [
         {
             "from": ["./src/**/*.*"],
@@ -54,7 +55,7 @@ This module aims to speed up QML prototyping for SailfishOS by auto syncing chan
     },
     "run": {
         "user": "nemo",
-        "keyfile": "/sailfish-sdk/vmshare/ssh/private_keys/SailfishOS_Emulator/nemo",
+        "privateKeyFile": "/sailfish-sdk/vmshare/ssh/private_keys/SailfishOS_Emulator/nemo",
         "exec": ["echo hello"]
     }
 }
@@ -80,7 +81,7 @@ The `keyfile` property is optional. If not set, the script prompts to enter the 
 ```
 "sync": {
     "user": "",
-    "keyfile": "",
+    "privateKeyFile": "",
     "files": [
         {
             "from": [],
@@ -96,7 +97,7 @@ One may use it to execute commands on the target device after files are synchron
 ```
 "run": {
     "user": "",
-    "keyfile": "",
+    "privateKeyFile": "",
     "exec": []
 }
 ```
