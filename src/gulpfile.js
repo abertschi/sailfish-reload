@@ -9,7 +9,7 @@ var ExecUtil = require('./exec').ExecUtil;
 
 gulp.task('ssh-init', function () {
 
-    if (Reloadfile.supportsExec()) {
+    if (Reloadfile.supportsExec() && !ExecUtil.isAlreadyInit()) {
         ExecUtil.initSsh();
     }
 });
@@ -37,7 +37,7 @@ function syncFiles() {
     }
 };
 
-gulp.task('exec', ['sync-files'], function () {
+gulp.task('exec', ['sync-files'], function() {
 
     if (Reloadfile.supportsExec()) {
         gutil.log("Executing commands on target:", Reloadfile.config.run.exec);

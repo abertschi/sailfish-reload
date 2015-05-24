@@ -9,6 +9,7 @@ var Reloadfile = require('./reloadfile').ReloadFile;
 var AuthMethods = require('./reloadfile').AuthMethods;
 
 var _clientMountDir = {};
+var _isAlreadyInit = false;
 
 var ExecUtil = {
 
@@ -27,7 +28,7 @@ var ExecUtil = {
 
             switch (Reloadfile.getAuthModeRun()) {
                 case AuthMethods.KEYFILE:
-                    sshConfig.privateKey = config.run.privateKeyFile;
+                    sshConfig.privateKey = fs.readFileSync(config.run.privateKeyFile);
                     break;
                 default:
             }
@@ -36,17 +37,22 @@ var ExecUtil = {
                 ignoreErrors: false,
                 sshConfig: sshConfig
             });
+
+            _isAlreadyInit = true;
         }
         return this._ssh;
     },
 
     execWith: function(cmds) {
-
         this._ssh.exec(cmds);
     },
 
     exec: function() {
         this.execWith(Reloadfile.config.run.exec);
+    },
+
+    isAlreadyInit: function() {
+        return _isAlreadyInit;
     },
 
     getClientMountDir: function() {
