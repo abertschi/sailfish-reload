@@ -1,79 +1,64 @@
 var gulp = require('gulp'),
-    gutil = require('gulp-util'),
-    shell = require('gulp-shell'),
-    GulpSsh = require('gulp-ssh'),
-    fs = require('fs'),
-    argv = require('minimist')(process.argv.slice(2));
+    util = require('util'),
+    gutil = require('gulp-util');
 
-
-var reloadfile = require('./reloadfile').ReloadFile;
-var AuthMethods = require('./reloadfile').AuthMethods;
+var Reloadfile = require('./reloadfile').ReloadFile;
 var SyncUtil = require('./sync').SyncUtil;
+var ExecUtil = require('./exec').ExecUtil;
 
-var ssh;
 
 gulp.task('ssh-init', function () {
 
-    if (reloadfile.supportsRun()) {
-        var config = reloadfile.config;
-
-        var sshConfig = {
-            host: config.device.host,
-            port: config.device.port,
-            username: config.run.user
-        };
-
-        switch (reloadfile.getAuthModeRun()) {
-            case AuthMethods.KEYFILE:
-                sshConfig.privateKey = config.run.keyfile;
-                break;
-            case AuthMethods.USERNAME_PASSWORD:
-                sshConfig.password = config.run.password;
-                break;
-            case AuthMethods.PUBLIC_KEY:
-                break;
-            default:
-        }
-
-        ssh = new GulpSsh({
-            ignoreErrors: false,
-            sshConfig: sshConfig
-        });
+    if (Reloadfile.supportsExec()) {
+        ExecUtil.initSsh();
     }
 });
 
-gulp.task('sync-files', function () {
-    var dest = config.mount + config.sync.dest;
-    gutil.log('syncing files to ' + dest);
+gulp.task('sync-files', syncFiles);
 
-    return gulp.src(config.sync.src)
+function syncFiles() {
+
+    var mount = SyncUtil.getClientMountDir();
+    var dest = mount + Reloadfile.config.sync.to;
+
+    for (var i = 0; i < Reloadfile.config.sync.from.length; i++) {
+        var from = Reloadfile.config.sync.from[i];
+
+        gutil.log(util.format("Syncing files [%s] to [%s]", from, dest));
+    }
+
+    return gulp
+        .src(Reloadfile.config.sync.from)
         .pipe(gulp.dest(dest));
-});
+};
 
 gulp.task('exec', ['sync-files'], function () {
-    gutil.log('start ', config.sailfish.app);
 
-    if (config.sailfish.autoLaunch) {
-        ssh.exec(['pkill sailfish-qml', {ignoreErrors: true},
-            'sailfish-qml ' + config.sailfish.app]);
+    if (Reloadfile.supportsExec()) {
+        gutil.log("Executing commands on target:", Reloadfile.config.run.exec);
+
+        ExecUtil.execWith(Reloadfile.config.run.exec);
     }
 });
 
 gulp.task('sshfs-umount', function () {
 
-    var mount = SyncUtil.getClientMountDir();
-    SyncUtil.unmountFs();
+    if (SyncUtil.isMounted()) {
 
-    gutil.log('Unmounting target ', mount);
-
+        var mount = SyncUtil.getClientMountDir();
+        gutil.log("Unmounting filesystem from: ", mount);
+        SyncUtil.unmountFs();
+    }
 });
 
 gulp.task('sshfs-mount', ['sshfs-umount'], function () {
 
     SyncUtil.mountFs();
     var mount = SyncUtil.getClientMountDir();
-    gutil.log("Target successfully mounted to ", mount);
+    gutil.log(util.format("Target successfully mounted to [%s]", mount));
 
+    // sync files initially
+    syncFiles();
 });
 
 gulp.on('err', function () {
@@ -81,7 +66,7 @@ gulp.on('err', function () {
 });
 
 gulp.task('watch', function () {
-    gulp.watch(config.sync.src, ['exec']);
+    gulp.watch(Reloadfile.config.sync.from, ['exec']);
 });
 
 gulp.task('default', ['sshfs-mount', 'ssh-init', 'watch']);
