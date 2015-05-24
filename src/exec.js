@@ -2,6 +2,7 @@ var temp  = require('temp'),
     fs    = require('fs'),
     util  = require('util'),
     path  = require('path'),
+    gutil = require('gulp-util'),
     GulpSsh = require('gulp-ssh');
 
 
@@ -34,7 +35,7 @@ var ExecUtil = {
             }
 
             this._ssh = new GulpSsh({
-                ignoreErrors: false,
+                ignoreErrors: true,
                 sshConfig: sshConfig
             });
 
