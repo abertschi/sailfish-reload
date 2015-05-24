@@ -35,7 +35,7 @@ var ExecUtil = {
             }
 
             this._ssh = new GulpSsh({
-                ignoreErrors: true,
+                ignoreErrors: false,
                 sshConfig: sshConfig
             });
 
@@ -45,7 +45,11 @@ var ExecUtil = {
     },
 
     execWith: function(cmds) {
-        this._ssh.exec(cmds);
+        try{
+           this._ssh.exec(cmds);
+        } catch (e) {
+            gutil.log(e);
+        }
     },
 
     exec: function() {
