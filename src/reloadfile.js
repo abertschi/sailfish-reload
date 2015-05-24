@@ -10,6 +10,8 @@ exports.AuthMethods = AuthMethods;
 
 var ReloadFile = {
 
+    verbose: false,
+
     config: {
         device: {
             host: "",
@@ -18,8 +20,12 @@ var ReloadFile = {
         sync: {
             user: "",
             keyfile: "",
-            from: [],
-            to: ""
+            files: [
+                {
+                    from: [],
+                    to: ""
+                }
+            ]
         },
         run: {
             user: "",

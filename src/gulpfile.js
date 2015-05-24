@@ -19,17 +19,22 @@ gulp.task('sync-files', syncFiles);
 function syncFiles() {
 
     var mount = SyncUtil.getClientMountDir();
-    var dest = mount + Reloadfile.config.sync.to;
 
-    for (var i = 0; i < Reloadfile.config.sync.from.length; i++) {
-        var from = Reloadfile.config.sync.from[i];
+    var files = Reloadfile.config.sync.files;
 
-        gutil.log(util.format("Syncing files [%s] to [%s]", from, dest));
+    for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        var dest = mount + file.to;
+
+        for (var j = 0; j < file.from.length; j++) {
+            var from = file.from[j];
+
+            gutil.log(util.format("Syncing files [%s] to [%s]", from, dest));
+        }
+
+        var _ = gulp.src(file.from)
+            .pipe(gulp.dest(dest));
     }
-
-    return gulp
-        .src(Reloadfile.config.sync.from)
-        .pipe(gulp.dest(dest));
 };
 
 gulp.task('exec', ['sync-files'], function () {
@@ -66,7 +71,11 @@ gulp.on('err', function () {
 });
 
 gulp.task('watch', function () {
-    gulp.watch(Reloadfile.config.sync.from, ['exec']);
+    var files = Reloadfile.config.sync.files;
+
+    for(var i = 0; i < files.length; i ++) {
+        gulp.watch(files[i].from, ['exec']);
+    }
 });
 
 gulp.task('default', ['sshfs-mount', 'ssh-init', 'watch']);
