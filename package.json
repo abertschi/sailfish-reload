@@ -1,10 +1,24 @@
 {
   "name": "sailfish-reload",
-  "version": "0.0.1",
-  "description": "Auto update source changes and sync them to the Sailfish Emulator or the Jolla Phone.",
+  "version": "0.1.0",
+  "description": "Auto update source changes and sync them to the a target device like the Sailfish Emulator or the Jolla Phone.",
   "main": "src/gulpfile.js",
   "author": "Andrin Bertschi",
   "license": "MIT",
+  "keywords": [
+    "sailfish",
+    "reload",
+    "sshfs",
+    "gulp"
+  ],
+  "bugs": {
+    "url": "https://github.com/abertschi/sailfish-reload/issues",
+    "email": "andrin.bertschi@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abertschi/sailfish-reload.git"
+  },
   "dependencies": {
     "chalk": "^1.0.0",
     "findup": "^0.1.5",
