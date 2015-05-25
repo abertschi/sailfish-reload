@@ -2,7 +2,6 @@
 [![twitter: @andrinbertschi]( https://img.shields.io/badge/twitter-andrinbertschi-yellow.svg?style=flat-square)](twitter.com/andrinbertschi)  
 
 # sailfish-reload
-   > Auto update source changes and sync them to a target device like the Sailfish Emulator or the Jolla Phone.
 
 This module aims to speed up QML prototyping for SailfishOS by auto syncing changes to a target.
 It is analogous to an auto refresh feature in web development.
@@ -75,7 +74,7 @@ One may configure multiple reload files for more than one device and use the `--
 The sync section defines the user being used to mount the target device.
 Further it defines what to sync with the target.
 
-The `keyfile` property is optional. If not set, the script prompts to enter the password.
+The `privateKeyFile` property is optional. If not set, ssh just prompts to enter the password manually.
 
 
 ```
