@@ -46,16 +46,13 @@ It is analogous to an auto refresh feature in web development.
         {
             "from": ["./qml/**/*.*"],
             "to": "/usr/share/test/qml"
-        },
-        {
-            "from": ["./test.pro", "./test.test"],
-            "to": "/usr/share/test"
         }]
     },
     "run": {
         "user": "nemo",
         "privateKeyFile": "/sailfish-sdk/vmshare/ssh/private_keys/SailfishOS_Emulator/nemo",
-        "exec": ["echo hello"]
+        "exec": ["pkill sailfish-qml",
+                 "sailfish-qml my-awesome-sf-app"]
     }
 }
 ```
