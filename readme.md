@@ -26,7 +26,7 @@ It is analogous to an auto refresh feature in web development.
 - `--create-reloadfile` generate a configuration file
 
 ### Compatibility
-- Tested under OSX. GNU/Linux should work as well.
+- Tested under OSX.
 
 ### Sample reloadfile
 ```json
